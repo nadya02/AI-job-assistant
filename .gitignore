@@ -1,0 +1,22 @@
+# Personal information
+profile/
+.obsidian/
+
+# Generated CVs and cover letters
+cover-letters/
+
+# Generated or private job data
+matches/
+reports/
+jobs.json
+
+# Local system files
+.DS_Store
+
+# Secrets and environment variables
+.env
+.env.*
+!.env.example
+
+# Local Claude settings
+.claude/settings.local.json

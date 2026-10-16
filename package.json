@@ -1,0 +1,22 @@
+{
+  "name": "ai-job-assistant",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:up": "docker compose up -d",
+    "db:push": "prisma db push",
+    "typecheck": "tsc",
+    "import": "node scripts/import-jobs.ts",
+    "prefilter": "node scripts/prefilter.ts",
+    "rank": "node scripts/rank.ts",
+    "weekly:prepare": "node scripts/prepare.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "prisma": "^6.0.0",
+    "typescript": "^7.0.2"
+  }
+}
