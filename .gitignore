@@ -20,3 +20,5 @@ jobs.json
 
 # Local Claude settings
 .claude/settings.local.json
+node_modules/
+.DS_Store
