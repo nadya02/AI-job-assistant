@@ -6,9 +6,10 @@ import { usePathname } from 'next/navigation';
 const LINKS = [
   { href: '/new', label: 'New this week' },
   { href: '/', label: 'Jobs' },
+  { href: '/saved', label: 'Saved' },
 ];
 
-export function NavLinks({ newCount }: { newCount: number }) {
+export function NavLinks({ newCount, savedCount }: { newCount: number; savedCount: number }) {
   const path = usePathname();
   return (
     <nav aria-label="Main">
@@ -21,6 +22,7 @@ export function NavLinks({ newCount }: { newCount: number }) {
               <Link href={l.href} className={active ? 'rail-link active' : 'rail-link'} aria-current={active ? 'page' : undefined}>
                 <span>{l.label}</span>
                 {l.href === '/new' && newCount > 0 && <span className="count">{newCount}</span>}
+                {l.href === '/saved' && savedCount > 0 && <span className="count">{savedCount}</span>}
               </Link>
             </li>
           );

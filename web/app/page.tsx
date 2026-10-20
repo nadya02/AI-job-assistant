@@ -10,6 +10,8 @@ import { STAGES, stageLabel } from '../lib/stages';
 import { isSkip, postedAgo } from '../lib/format';
 import { JobPanel, tabFrom } from './components/job-panel';
 import { MiniScore } from './components/score-bar';
+import { RemoveJob } from './components/remove-job';
+import { SaveJob } from './components/save-job';
 
 // Always read fresh data: the import and triage scripts change the database
 // outside of this app.
@@ -155,7 +157,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
         <div className="workspace">
           <ul className="list" aria-label="Jobs">
             {jobs.map((job) => (
-              <li key={job.id}>
+              <li key={job.id} className="jitem">
                 <Link href={href({ job: job.id })} scroll={false} className={job.id === selectedId ? 'jrow selected' : 'jrow'} aria-current={job.id === selectedId ? 'true' : undefined}>
                   <span className="jrow-main">
                     <span className="jrow-company">{job.company}</span>
@@ -173,6 +175,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<Par
                     )}
                   </span>
                 </Link>
+                <div className="row-actions">
+                  <SaveJob jobId={job.id} saved={Boolean(job.applications[0]?.savedAt)} label={`${job.title} at ${job.company}`} />
+                  <RemoveJob jobId={job.id} label={`${job.title} at ${job.company}`} />
+                </div>
               </li>
             ))}
           </ul>

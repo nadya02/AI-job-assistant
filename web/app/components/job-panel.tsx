@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { Prisma } from '@prisma/client';
-import { addContact, deleteContact, removeJob, saveNotes } from '../actions';
+import { addContact, deleteContact, saveNotes } from '../actions';
+import { RemoveJob } from './remove-job';
+import { SaveJob } from './save-job';
 import { gapKind, isStrong, parseGaps, parseSkills, postedAgo } from '../../lib/format';
 import { ScoreBar } from './score-bar';
 import { StageSelect } from './stage-select';
@@ -28,7 +30,8 @@ export function tabFrom(value: string): TabKey {
 
 // The detail panel. `applications` holds only the current user's row (the page
 // asks for it that way), so everything personal here belongs to them.
-export async function JobPanel({ job, tab, tabHref, run }: { job: PanelJob; tab: TabKey; tabHref: (tab: TabKey) => string; run: RunView | null }) {
+// `closeHref` adds an X that leaves the panel; only pages where nothing is open by default pass it.
+export async function JobPanel({ job, tab, tabHref, run, closeHref }: { job: PanelJob; tab: TabKey; tabHref: (tab: TabKey) => string; run: RunView | null; closeHref?: string }) {
   const app = job.applications[0];
   const match = job.match;
   const skills = parseSkills(match?.topSkills ?? null);
@@ -48,6 +51,17 @@ export async function JobPanel({ job, tab, tabHref, run }: { job: PanelJob; tab:
           <strong>{job.company}</strong>
           <span className="meta">{job.location}, posted {postedAgo(job.postedAt).toLowerCase()}</span>
         </p>
+        <div className="head-actions">
+          <SaveJob jobId={job.id} saved={Boolean(app?.savedAt)} label={`${job.title} at ${job.company}`} />
+          <RemoveJob jobId={job.id} label={`${job.title} at ${job.company}`} />
+          {closeHref && (
+            <Link href={closeHref} scroll={false} className="trash" aria-label="Close details" title="Close">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </Link>
+          )}
+        </div>
       </header>
 
       <h2 className="panel-title">{job.title}</h2>
@@ -138,7 +152,7 @@ export async function JobPanel({ job, tab, tabHref, run }: { job: PanelJob; tab:
         </div>
       )}
 
-      {letter && <LetterView result={letter} />}
+      {letter && <LetterView result={letter} jobId={job.id} />}
 
       {current === 'contacts' && (
         <div>
@@ -182,11 +196,6 @@ export async function JobPanel({ job, tab, tabHref, run }: { job: PanelJob; tab:
             <input type="hidden" name="jobId" value={job.id} />
             <textarea name="notes" rows={6} defaultValue={app?.notes ?? ''} placeholder="Anything worth remembering about this job" aria-label="Notes" />
             <button type="submit" className="btn">Save notes</button>
-          </form>
-          <form action={removeJob} className="remove-form">
-            <p className="muted">Hides this job from your list. It stays in the database, so an import never brings it back.</p>
-            <input type="hidden" name="jobId" value={job.id} />
-            <button type="submit" className="btn small">Remove job</button>
           </form>
         </div>
       )}

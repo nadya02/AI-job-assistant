@@ -1,5 +1,6 @@
 import { wordCount, type LetterResult } from '../../lib/letters';
 import { CopyText } from './copy-text';
+import { LetterEditor } from './letter-editor';
 
 // The letters are plain Markdown written by the agent: paragraphs and **bold**.
 // Rendered as text nodes, never as HTML, so nothing in a file can inject markup.
@@ -26,7 +27,7 @@ function parseBrief(text: string): { label: string; body: string }[] {
     });
 }
 
-export function LetterView({ result }: { result: LetterResult }) {
+export function LetterView({ result, jobId }: { result: LetterResult; jobId: string }) {
   if (!result.ok) {
     return (
       <div>
@@ -46,12 +47,13 @@ export function LetterView({ result }: { result: LetterResult }) {
         <CopyText text={result.letter.trim()} label="Copy letter" />
       </div>
 
-      <div className="letter">
-        {paragraphs.map((p, i) => (
-          <p key={i} className={i === 0 ? 'letter-from' : undefined}><Lines text={p} /></p>
-        ))}
-      </div>
-      <p className="hint">To change the letter, edit the file. This page reads it from disk each time.</p>
+      <LetterEditor jobId={jobId} letter={result.letter}>
+        <div className="letter">
+          {paragraphs.map((p, i) => (
+            <p key={i} className={i === 0 ? 'letter-from' : undefined}><Lines text={p} /></p>
+          ))}
+        </div>
+      </LetterEditor>
 
       {brief.length > 0 && (
         <details className="brief">

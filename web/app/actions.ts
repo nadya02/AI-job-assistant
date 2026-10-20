@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { prisma } from '../lib/prisma';
 import { getCurrentUser } from '../lib/current-user';
+import { visibleTo } from '../lib/applications';
+import { writeLetter } from '../lib/letters';
 import { STAGES } from '../lib/stages';
 import { startRun } from '../lib/runner';
 import { cleanUrl, contentHash, FORM_FIELDS, manualJobId, type AddJobState } from '../lib/add-job';
@@ -96,18 +98,73 @@ export async function deleteContact(form: FormData) {
   refreshJob(jobId);
 }
 
-// Soft delete: the Job row stays, so an import never brings it back. A job that
-// has not been triaged yet is also marked skipped, so triage does not spend time on it.
-export async function removeJob(form: FormData) {
+// Save an edited letter back to its file in cover-letters/. The file is shared by
+// everyone who sees the job (Match is one row per job), so the edit is too.
+export async function saveLetter(form: FormData) {
+  const user = await getCurrentUser();
+  const jobId = text(form, 'jobId');
+  const letter = form.get('letter');
+  if (typeof letter !== 'string') throw new Error('Missing letter text');
+
+  const job = await prisma.job.findFirst({ where: { id: jobId, AND: visibleTo(user.id) }, select: { match: { select: { letterPath: true } } } });
+  const letterPath = job?.match?.letterPath;
+  if (!letterPath) throw new Error('This job has no letter');
+  await writeLetter(letterPath, letter);
+
+  revalidatePath('/');
+  revalidatePath('/new');
+  revalidatePath('/saved');
+}
+
+// Save or unsave a job for this person (the Saved page lists the saved ones).
+export async function toggleSaved(form: FormData) {
   const user = await getCurrentUser();
   const jobId = text(form, 'jobId');
 
-  await applicationFor(user.id, jobId);
-  await prisma.application.update({ where: { userId_jobId: { userId: user.id, jobId } }, data: { removed: true } });
-  await prisma.job.updateMany({
-    where: { id: jobId, status: 'pending' },
-    data: { status: 'skipped', skipReason: 'removed in the tracker' },
-  });
+  const job = await prisma.job.findFirst({ where: { id: jobId, AND: visibleTo(user.id) }, select: { id: true } });
+  if (!job) throw new Error('Job not found');
+  const app = await applicationFor(user.id, jobId);
+  await prisma.application.update({ where: { id: app.id }, data: { savedAt: app.savedAt ? null : new Date() } });
+
+  revalidatePath('/');
+  revalidatePath('/new');
+  revalidatePath('/saved');
+}
+
+// Remove a job, for one of two reasons the person picks:
+// - not-interested: soft delete. The Job row stays, so an import never brings it back.
+//   A job that has not been triaged yet is also marked skipped, so triage does not
+//   spend time on it.
+// - closed: the company no longer takes applications, so the job is deleted from the
+//   database (Job is shared, so it goes for everyone). A letter file in
+//   cover-letters/ is left on disk.
+export async function removeJob(form: FormData) {
+  const user = await getCurrentUser();
+  const jobId = text(form, 'jobId');
+  const reason = text(form, 'reason');
+
+  if (reason === 'closed') {
+    const job = await prisma.job.findFirst({ where: { id: jobId, AND: visibleTo(user.id) }, select: { id: true } });
+    if (!job) throw new Error('Job not found');
+    const busy = await prisma.run.findFirst({ where: { jobId, status: { in: ['queued', 'running'] } }, select: { id: true } });
+    if (busy) throw new Error('A cover letter is being written for this job. Remove it when the run has finished.');
+    // Contacts go with the Application rows (cascade). The other relations have no cascade.
+    await prisma.$transaction([
+      prisma.application.deleteMany({ where: { jobId } }),
+      prisma.match.deleteMany({ where: { jobId } }),
+      prisma.run.deleteMany({ where: { jobId } }),
+      prisma.job.delete({ where: { id: jobId } }),
+    ]);
+  } else if (reason === 'not-interested') {
+    await applicationFor(user.id, jobId);
+    await prisma.application.update({ where: { userId_jobId: { userId: user.id, jobId } }, data: { removed: true } });
+    await prisma.job.updateMany({
+      where: { id: jobId, status: 'pending' },
+      data: { status: 'skipped', skipReason: 'removed in the tracker' },
+    });
+  } else {
+    throw new Error('Pick a reason for removing the job');
+  }
 
   revalidatePath('/');
   revalidatePath('/new');

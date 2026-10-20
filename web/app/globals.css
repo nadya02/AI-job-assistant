@@ -212,7 +212,6 @@ blockquote { margin: 0; font-family: var(--serif); font-style: italic; font-size
 .contact-list li > div { flex: 1; min-width: 0; font-size: 15px; overflow-wrap: anywhere; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 14px; }
 .notes-form { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.remove-form { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
 .stage-form select { width: 100%; padding-right: 8px; }
 
 /* ---------- New this week: checkbox list and action bar ---------- */
@@ -288,6 +287,8 @@ blockquote { margin: 0; font-family: var(--serif); font-style: italic; font-size
   display: flex; flex-direction: column; gap: 14px; overflow-wrap: anywhere;
 }
 .letter p { max-width: 68ch; }
+.letter-edit { display: flex; flex-direction: column; gap: 8px; }
+.letter-edit textarea { font-family: var(--serif); font-size: 16px; line-height: 1.6; min-height: 320px; }
 .letter-from { color: var(--umber-deep); }
 .brief { border-top: 1px solid var(--hairline); padding-top: 12px; }
 .brief summary { cursor: pointer; font-weight: 600; font-size: 14px; }
@@ -295,6 +296,45 @@ blockquote { margin: 0; font-family: var(--serif); font-style: italic; font-size
 .brief dt { font-size: 13px; font-weight: 600; color: var(--umber-deep); }
 .brief dd { margin: 2px 0 0; font-size: 14px; line-height: 1.55; overflow-wrap: anywhere; }
 @media (max-width: 960px) { .letter { padding: 18px 16px; } }
+
+/* ---------- Remove job: trash button and confirmation dialog ---------- */
+.jitem { position: relative; }
+.jitem > .row-actions { position: absolute; right: 14px; bottom: 12px; display: flex; gap: 2px; }
+.head-actions { margin-left: auto; align-self: flex-start; display: flex; gap: 2px; }
+.save-form { display: contents; }
+a.trash { text-decoration: none; }
+.trash.save.on { color: var(--slate); }
+.trash.save:hover { background: var(--chartreuse); }
+.trash {
+  display: grid; place-items: center; width: 32px; height: 32px; padding: 0; cursor: pointer;
+  background: none; border: 1.5px solid transparent; border-radius: 10px; color: var(--umber-deep);
+}
+.trash:hover { background: var(--coral); color: var(--slate); border-color: var(--slate); }
+.confirm { max-width: 460px; width: calc(100% - 32px); background: var(--paper); color: var(--slate); border: 1.5px solid var(--slate); border-radius: 16px; padding: 24px; }
+.confirm::backdrop { background: rgba(43, 37, 57, 0.45); }
+.confirm form { display: flex; flex-direction: column; gap: 14px; }
+.confirm h2 { font-size: 24px; }
+.confirm fieldset { border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.confirm legend { font-size: 14px; font-weight: 600; margin-bottom: 8px; padding: 0; }
+.confirm label { display: flex; gap: 10px; align-items: flex-start; border: 1.5px solid var(--hairline); border-radius: 12px; padding: 10px 12px; cursor: pointer; font-weight: 600; font-size: 15px; }
+.confirm label:has(input:checked) { border-color: var(--slate); background: var(--chartreuse); }
+.confirm label input { margin: 4px 0 0; padding: 0; flex: none; accent-color: var(--slate); }
+.confirm label small { display: block; font-weight: 400; font-size: 13px; color: var(--umber-deep); margin-top: 2px; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.btn.danger { background: var(--slate); color: var(--coral); font-weight: 700; }
+.btn.danger:hover:not(:disabled) { background: #3a3350; }
+
+/* ---------- Saved jobs page ---------- */
+.saved-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.saved-card { background: var(--paper); border: 1px solid var(--hairline); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.workspace > .saved-grid { grid-template-columns: minmax(0, 1fr); }
+.saved-card.selected { background: var(--chartreuse); border: 2px solid var(--slate); padding: 15px; }
+.saved-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.saved-id { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.saved-title { font-family: var(--serif); font-weight: 600; font-size: 20px; line-height: 1.25; text-decoration: none; }
+.saved-title:hover { text-decoration: underline; }
+.saved-actions { display: flex; align-items: center; gap: 8px; margin-top: auto; padding-top: 8px; }
+.saved-actions .save-form { display: block; margin-left: auto; }
 
 /* ---------- Letter runs (M6) ---------- */
 .run-note { margin: 14px 0 0; font-size: 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; color: var(--umber-deep); }
