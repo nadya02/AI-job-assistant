@@ -9,6 +9,7 @@ cover-letters/
 matches/
 reports/
 jobs.json
+inbox/
 
 # Local system files
 .DS_Store
@@ -22,3 +23,7 @@ jobs.json
 .claude/settings.local.json
 node_modules/
 .DS_Store
+.next/
+
+# Personal notes
+debugging-notes.md
